@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken")
 const TOKEN_TABLE = "tokens"
 
 class TokenService {
+  
   generateTokens(payload) {
     const accessToken = jwt.sign(payload, conf.accessSecret, {
       expiresIn: "15m",
@@ -17,17 +18,35 @@ class TokenService {
     }
   }
 
+  validateAccessToken(token) {
+    try {
+      const userData = jwt.verify(token, conf.accessSecret)
+      return userData
+    } catch (e) {
+      return null
+    }
+  }
+
+  validateRefreshToken(token) {
+    try {
+      const userData = jwt.verify(token, conf.refreshSecret)
+      return userData
+    } catch (e) {
+      return null
+    }
+  }
+
   async saveToken(userId, refreshToken) {
     const tokenData = await knex
       .select("*")
       .from(TOKEN_TABLE)
       .where("userid", userId)
-    console.log(tokenData)
+    
     if (tokenData[0]) {
-      tokenData.refreshToken = refreshToken
       return await knex(TOKEN_TABLE)
         .where({ userid: userId })
-        .update(tokenData[0])
+        .update({refreshtoken: refreshToken})
+        .returning('*')
     }
 
     const token = await knex
@@ -42,6 +61,23 @@ class TokenService {
 
     return token
   }
+
+  async removeToken(refreshToken) {
+    const tokenData = await knex
+      .select("*")
+      .from(TOKEN_TABLE)
+      .where("refreshtoken", refreshToken)
+    return tokenData
+  }
+
+  async findToken(refreshToken) {
+    const tokenData = await knex(TOKEN_TABLE)
+      .where("refreshtoken", refreshToken)
+      .del()
+      .returning('*')
+    return tokenData
+  }
+
 }
 
 module.exports = new TokenService()
