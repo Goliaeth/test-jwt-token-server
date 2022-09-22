@@ -1,6 +1,8 @@
 require("dotenv").config()
 
 module.exports = {
+  accessSecret: process.env.JWT_ACCESS_SECRET,
+  refreshSecret: process.env.JWT_REFRESH_SECRET,
   PORT: process.env.PORT,
   pg: {
     client: "pg",
