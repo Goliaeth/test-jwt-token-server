@@ -22,10 +22,12 @@ class TokenService {
       .select("*")
       .from(TOKEN_TABLE)
       .where("userid", userId)
-
+    console.log(tokenData)
     if (tokenData[0]) {
       tokenData.refreshToken = refreshToken
-      return await knex(TOKEN_TABLE).where({ userId: userId }).update(tokenData)
+      return await knex(TOKEN_TABLE)
+        .where({ userid: userId })
+        .update(tokenData[0])
     }
 
     const token = await knex

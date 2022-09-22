@@ -31,6 +31,30 @@ class UserService {
       .into(USERS_TABLE)
 
     const userDto = new UserDto(user[0])
+    const tokens = tokenService.generateTokens({ ...userDto })
+
+    await tokenService.saveToken(userDto.id, tokens.refreshToken)
+
+    return {
+      ...tokens,
+      user: userDto,
+    }
+  }
+
+  async login(email, password) {
+    const user = await knex.select("*").from(USERS_TABLE).where("email", email)
+
+    if (!user[0]) {
+      throw ApiError.BadRequest(
+        `Пользователь с почтовым адресом ${email} не найден`
+      )
+    }
+
+    const isPassEquals = await bcrypt.compare(password, user[0].password)
+    if (!isPassEquals) {
+      throw ApiError.BadRequest("Wrong password")
+    }
+    const userDto = new UserDto(user[0])
 
     const tokens = tokenService.generateTokens({ ...userDto })
 
