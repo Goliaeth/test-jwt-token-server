@@ -4,10 +4,9 @@ const jwt = require("jsonwebtoken")
 const TOKEN_TABLE = "tokens"
 
 class TokenService {
-  
   generateTokens(payload) {
     const accessToken = jwt.sign(payload, conf.accessSecret, {
-      expiresIn: "15m",
+      expiresIn: "15s",
     })
     const refreshToken = jwt.sign(payload, conf.refreshSecret, {
       expiresIn: "30d",
@@ -41,12 +40,12 @@ class TokenService {
       .select("*")
       .from(TOKEN_TABLE)
       .where("userid", userId)
-    
+
     if (tokenData[0]) {
       return await knex(TOKEN_TABLE)
         .where({ userid: userId })
-        .update({refreshtoken: refreshToken})
-        .returning('*')
+        .update({ refreshtoken: refreshToken })
+        .returning("*")
     }
 
     const token = await knex
@@ -62,7 +61,7 @@ class TokenService {
     return token
   }
 
-  async removeToken(refreshToken) {
+  async findToken(refreshToken) {
     const tokenData = await knex
       .select("*")
       .from(TOKEN_TABLE)
@@ -70,14 +69,13 @@ class TokenService {
     return tokenData
   }
 
-  async findToken(refreshToken) {
+  async removeToken(refreshToken) {
     const tokenData = await knex(TOKEN_TABLE)
       .where("refreshtoken", refreshToken)
       .del()
-      .returning('*')
+      .returning("*")
     return tokenData
   }
-
 }
 
 module.exports = new TokenService()

@@ -7,7 +7,6 @@ const UserDto = require("../dtos/user-dto")
 const ApiError = require("../exceptions/api-error")
 
 class UserService {
-  
   async registration(email, password) {
     const candidate = await knex
       .select("*")
@@ -22,14 +21,12 @@ class UserService {
 
     const hashPassword = await bcrypt.hash(password, 3)
     const user = await knex
-      .insert(
-        {
-          email: email,
-          password: hashPassword,
-        }
-      )
+      .insert({
+        email: email,
+        password: hashPassword,
+      })
       .into(USERS_TABLE)
-      .returning('*')
+      .returning("*")
 
     const userDto = new UserDto(user[0])
     const tokens = tokenService.generateTokens({ ...userDto })
@@ -79,13 +76,17 @@ class UserService {
 
     const userData = tokenService.validateRefreshToken(refreshToken)
     const tokenFromDB = await tokenService.findToken(refreshToken)
-    if (!userData || ! !tokenFromDB) {
+
+    if (!userData || !tokenFromDB[0]) {
       throw ApiError.UnauthorizedError()
     }
-    
-    const user = await knex.select("*").from(USERS_TABLE).where("id", userData.id)
-    const userDto = new UserDto(user[0])
 
+    const user = await knex
+      .select("*")
+      .from(USERS_TABLE)
+      .where("id", userData.id)
+
+    const userDto = new UserDto(user[0])
     const tokens = tokenService.generateTokens({ ...userDto })
 
     await tokenService.saveToken(userDto.id, tokens.refreshToken)
@@ -96,6 +97,10 @@ class UserService {
     }
   }
 
+  async getAllUsers() {
+    const users = knex.select("*").from(USERS_TABLE)
+    return users
+  }
 }
 
 module.exports = new UserService()
