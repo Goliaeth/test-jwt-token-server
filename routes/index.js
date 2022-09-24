@@ -6,18 +6,7 @@ const authMiddleware = require("../middlewares/auth-middleware")
 
 const router = new Router()
 
-router.post(
-  "/registration",
-  urlencodedParser,
-  [
-    check("email", "Email is not valid").isEmail().normalizeEmail(),
-    check(
-      "password",
-      "Password must be more then 2 and less then 32 chars"
-    ).isLength({ min: 3, max: 32 }),
-  ],
-  userController.registration
-)
+router.post("/registration", urlencodedParser, userController.registration)
 router.post("/login", urlencodedParser, userController.login)
 router.post("/logout", userController.logout)
 router.get("/refresh", userController.refresh)

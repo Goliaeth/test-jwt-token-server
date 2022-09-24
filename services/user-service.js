@@ -7,24 +7,20 @@ const UserDto = require("../dtos/user-dto")
 const ApiError = require("../exceptions/api-error")
 
 class UserService {
-  async registration(email, password) {
+  async registration(telephone) {
     const candidate = await knex
       .select("*")
       .from(USERS_TABLE)
-      .where("email", email)
+      .where("telephone", telephone)
 
     if (candidate[0]) {
       throw ApiError.BadRequest(
-        `Пользователь с почтовым адресом ${email} уже существует`
+        `Пользователь с таким телефоном ${telephone} уже существует`
       )
     }
 
-    const hashPassword = await bcrypt.hash(password, 3)
     const user = await knex
-      .insert({
-        email: email,
-        password: hashPassword,
-      })
+      .insert({ telephone: telephone })
       .into(USERS_TABLE)
       .returning("*")
 
@@ -39,18 +35,20 @@ class UserService {
     }
   }
 
-  async login(email, password) {
-    const user = await knex.select("*").from(USERS_TABLE).where("email", email)
+  async login(telephone, code) {
+    const user = await knex
+      .select("*")
+      .from(USERS_TABLE)
+      .where("telephone", telephone)
 
     if (!user[0]) {
       throw ApiError.BadRequest(
-        `Пользователь с почтовым адресом ${email} не найден`
+        `Пользователь с телефоном ${telephone} не найден`
       )
     }
 
-    const isPassEquals = await bcrypt.compare(password, user[0].password)
-    if (!isPassEquals) {
-      throw ApiError.BadRequest("Wrong password")
+    if (code !== user[0].code) {
+      throw ApiError.BadRequest("Код не подходит")
     }
     const userDto = new UserDto(user[0])
 

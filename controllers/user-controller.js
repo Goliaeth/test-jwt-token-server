@@ -5,12 +5,8 @@ const ApiError = require("../exceptions/api-error")
 class UserController {
   async registration(req, res, next) {
     try {
-      const errors = validationResult(req)
-      if (!errors.isEmpty()) {
-        return next(ApiError.BadRequest("Validation error", errors.array()))
-      }
-      const { email, password } = req.body
-      const userData = await userService.registration(email, password)
+      const { telephone } = req.body
+      const userData = await userService.registration(telephone)
       res.cookie("refreshToken", userData.refreshToken, {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: true,
@@ -23,8 +19,8 @@ class UserController {
 
   async login(req, res, next) {
     try {
-      const { email, password } = req.body
-      const userData = await userService.login(email, password)
+      const { telephone, code } = req.body
+      const userData = await userService.login(telephone, code)
       res.cookie("refreshToken", userData.refreshToken, {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: true,
