@@ -25,7 +25,10 @@ class UserController {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: true,
       })
-      return res.json(userData)
+      return res.json({
+        accessToken: userData.accessToken,
+        user: userData.user,
+      })
     } catch (e) {
       next(e)
     }
@@ -60,6 +63,16 @@ class UserController {
     try {
       const users = await userService.getAllUsers()
       return res.json(users)
+    } catch (e) {
+      next(e)
+    }
+  }
+
+  async getCode(req, res, next) {
+    try {
+      const { telephone } = req.body
+      const codeData = await userService.getCode(telephone)
+      return res.json(codeData)
     } catch (e) {
       next(e)
     }

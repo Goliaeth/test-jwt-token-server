@@ -3,8 +3,9 @@ const knex = require("knex")(conf.pg)
 const USERS_TABLE = "users"
 const bcrypt = require("bcrypt")
 const tokenService = require("./token-service")
-const UserDto = require("../dtos/user-dto")
+const UserDto2 = require("../dtos/user-dto-2")
 const ApiError = require("../exceptions/api-error")
+const UserDto = require("../dtos/user-dto")
 
 class UserService {
   async registration(telephone) {
@@ -24,14 +25,14 @@ class UserService {
       .into(USERS_TABLE)
       .returning("*")
 
-    const userDto = new UserDto(user[0])
+    const userDto2 = new UserDto(user[0])
     const tokens = tokenService.generateTokens({ ...userDto })
 
     await tokenService.saveToken(userDto.id, tokens.refreshToken)
 
     return {
       ...tokens,
-      user: userDto,
+      user: user[0],
     }
   }
 
@@ -50,7 +51,8 @@ class UserService {
     if (code !== user[0].code) {
       throw ApiError.BadRequest("Код не подходит")
     }
-    const userDto = new UserDto(user[0])
+    const userDto = new UserDto2(user[0])
+    const userDto2 = new UserDto(user[0])
 
     const tokens = tokenService.generateTokens({ ...userDto })
 
@@ -58,7 +60,7 @@ class UserService {
 
     return {
       ...tokens,
-      user: userDto,
+      user: userDto2,
     }
   }
 
@@ -84,20 +86,31 @@ class UserService {
       .from(USERS_TABLE)
       .where("id", userData.id)
 
-    const userDto = new UserDto(user[0])
+    const userDto = new UserDto2(user[0])
+    const userDto2 = new UserDto(user[0])
     const tokens = tokenService.generateTokens({ ...userDto })
 
     await tokenService.saveToken(userDto.id, tokens.refreshToken)
 
     return {
       ...tokens,
-      user: userDto,
+      user: userDto2,
     }
   }
 
   async getAllUsers() {
-    const users = knex.select("*").from(USERS_TABLE)
-    return users
+    const users = await knex.select("*").from(USERS_TABLE)
+
+    const userDtos = users.map((user) => new UserDto(user))
+    return userDtos
+  }
+
+  async getCode(telephone) {
+    const codeData = await knex
+      .select("*")
+      .from(USERS_TABLE)
+      .where("telephone", telephone)
+    return codeData[0]
   }
 }
 

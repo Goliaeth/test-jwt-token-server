@@ -6,7 +6,7 @@ const TOKEN_TABLE = "tokens"
 class TokenService {
   generateTokens(payload) {
     const accessToken = jwt.sign(payload, conf.accessSecret, {
-      expiresIn: "1m",
+      expiresIn: "15m",
     })
     const refreshToken = jwt.sign(payload, conf.refreshSecret, {
       expiresIn: "30d",
