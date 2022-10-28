@@ -10,7 +10,7 @@ router.post("/registration", urlencodedParser, userController.registration)
 router.post("/login", urlencodedParser, userController.login)
 router.post("/logout", userController.logout)
 router.post("/code", urlencodedParser, userController.getCode)
-router.get("/refresh", userController.refresh)
+router.post("/refresh", urlencodedParser, userController.refresh)
 router.get("/users", authMiddleware, userController.getUsers)
 
 module.exports = router
